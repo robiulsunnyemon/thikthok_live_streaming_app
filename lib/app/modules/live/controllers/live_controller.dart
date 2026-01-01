@@ -131,9 +131,9 @@ class LiveController extends GetxController {
     WakelockPlus.enable();
   }
 
-  void leaveLive() {
+  Future<void> leaveLive() async {
     if (isEngineInitialized.value) {
-      _engine.leaveChannel();
+      await _engine.leaveChannel();
     }
     isJoined.value = false;
     isEngineInitialized.value = false;
@@ -208,14 +208,9 @@ class LiveController extends GetxController {
 
       case 'joined_success':
         final channel = event['channel'];
-        // Viewer joins with UID 0 (auto-assigned by Agora)
-        _joinAgoraChannel(null, channel, 0); 
-        
-        // FIX: "Waiting for host"
-        // Since backend sets host UID = 1, we can assume we are waiting for UID 1.
-        // However, 'remoteUid' is usually dynamically set by 'onUserJoined'.
-        // We will reset remoteUid to 0 here to ensure UI shows waiting state until correct user joins.
-        remoteUid.value = 0; 
+        final token = event['agora_token']; // ব্যাকেন্ড থেকে আসা টোকেন
+        final uid = event['uid'] ?? 0;
+        _joinAgoraChannel(token, channel, uid);
         break;
 
       case 'viewer_count_update':
@@ -233,30 +228,37 @@ class LiveController extends GetxController {
   }
 
   Future<void> _joinAgoraChannel(String? token, String channelId, int uid) async {
-    if (!isEngineInitialized.value) return;
-    
-    // Ensure we leave previous if any
+    if (!isEngineInitialized.value) {
+      await _initAgora();
+    }
+
+
     if (isJoined.value) {
-       await _engine.leaveChannel();
+      await _engine.leaveChannel();
+      isJoined.value = false;
     }
 
     try {
+
+      await Future.delayed(Duration(milliseconds: 200));
+
       await _engine.joinChannel(
-        token: token ?? '', 
+        token: token ?? '',
         channelId: channelId,
         uid: uid,
         options: ChannelMediaOptions(
-          clientRoleType: isHost.value ? ClientRoleType.clientRoleBroadcaster : ClientRoleType.clientRoleAudience,
+          clientRoleType: isHost.value
+              ? ClientRoleType.clientRoleBroadcaster
+              : ClientRoleType.clientRoleAudience,
           publishCameraTrack: isHost.value,
           publishMicrophoneTrack: isHost.value,
-          autoSubscribeAudio: !isHost.value,
-          autoSubscribeVideo: !isHost.value,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: true,
         ),
       );
-      print("Agora Join Requested for $channelId with uid $uid");
+      print("Agora Join Requested: $channelId with uid $uid");
     } catch (e) {
       print("Agora Join Failed: $e");
-      Get.snackbar("Error", "Failed to join live stream.");
     }
   }
 
