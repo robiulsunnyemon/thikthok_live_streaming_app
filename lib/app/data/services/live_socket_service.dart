@@ -19,7 +19,9 @@ class LiveSocketService extends GetxService {
     connect();
   }
 
-  void connect() {
+  Future<void> connect() async {
+    if (isConnected.value) return;
+
     final token = GetStorage().read('token');
     if (token != null) {
       try {
@@ -27,10 +29,14 @@ class LiveSocketService extends GetxService {
         print('Connecting to Live WebSocket: $wsUrl'); 
         
         _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
-        isConnected.value = true;
         
+        // Listen to the stream to detect connection
         _channel!.stream.listen(
           (message) {
+            if (!isConnected.value) {
+               isConnected.value = true;
+               print("Live WebSocket Connected");
+            }
             print('Live WS Received: $message');
             if (message != null && message.isNotEmpty) {
               try {
@@ -53,20 +59,35 @@ class LiveSocketService extends GetxService {
             isConnected.value = false;
           },
         );
+        
+        // Initial wait to allow connection to establish
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (_channel != null) {
+             isConnected.value = true; 
+        }
+
       } catch (e) {
         print('Live WebSocket Connection Failed: $e');
         isConnected.value = false;
       }
+    } else {
+      print("LiveSocketService: No token found");
     }
   }
 
-  void sendAction(Map<String, dynamic> action) {
+  Future<void> sendAction(Map<String, dynamic> action) async {
+    if (_channel == null || !isConnected.value) {
+      print('Live WebSocket not connected. Attempting to connect...');
+      await connect();
+    }
+    
     if (_channel != null && isConnected.value) {
       final jsonStr = jsonEncode(action);
       _channel!.sink.add(jsonStr);
       print('Live WS Sent: $jsonStr');
     } else {
-      print('Cannot send action: Live WebSocket not connected');
+      print('Cannot send action: Live WebSocket still not connected after retry.');
+      Get.snackbar("Connection Error", "Could not connect to live server.");
     }
   }
 

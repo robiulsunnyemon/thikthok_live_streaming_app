@@ -29,6 +29,7 @@ class LiveController extends GetxController {
   final titleController = ''.obs; 
   final isPremium = false.obs;
   final entryFee = 0.0.obs;
+  final totalCoins = 0.0.obs; // Host's total coins
 
   // Constants - REPLACE WITH YOUR APP ID
   static const appId = "d828e5644c984d278f3d0572ffcda19f";
@@ -104,6 +105,13 @@ class LiveController extends GetxController {
     await _initAgora();
     await _engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
     await _engine.startPreview();
+
+    if (isPremium.value && entryFee.value <= 0) {
+      Get.snackbar("Error", "Please enter a valid entry fee for premium stream");
+      return;
+    }
+
+    print("this funcion is called");
 
     // Send start_live to server
     socketService.sendAction({
@@ -224,6 +232,16 @@ class LiveController extends GetxController {
       case 'new_comment':
         comments.add(LiveCommentModel.fromJson(event));
         break;
+
+      case 'balance_update': // New event listener for coin updates
+        totalCoins.value = (event['new_balance'] as num).toDouble();
+        break;
+
+      case 'joined_success': // Update balance when joining (paying) or just getting info
+         if (event['new_balance'] != null) {
+            totalCoins.value = (event['new_balance'] as num).toDouble(); 
+         }
+         // ... existing logic continues inside case ...
     }
   }
 

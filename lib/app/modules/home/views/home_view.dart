@@ -14,16 +14,36 @@ class HomeView extends GetView<HomeController> {
         title: const Text('HomeView'),
         centerTitle: true,
       ),
-      body: Center(
-        child: InkWell(
-          onTap: (){
-            Get.toNamed(Routes.LIVE_FEED);
-          },
-          child: const Text(
-            'HomeView is working',
-            style: TextStyle(fontSize: 20),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: InkWell(
+              onTap: (){
+                Get.toNamed(Routes.LIVE_FEED);
+              },
+              child: const Text(
+                'LiveStreaming',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: InkWell(
+              onTap: (){
+                Get.toNamed(Routes.PROFILE);
+              },
+              child: const Text(
+                'My Profile',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ),
+          Row()
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.toNamed('/chat'),

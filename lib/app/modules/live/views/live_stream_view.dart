@@ -92,6 +92,30 @@ class LiveStreamView extends GetView<LiveController> {
                           ],
                         ),
                       ),
+
+                      
+                      // COIN DISPLAY FOR HOST
+                      Obx(() {
+                        if (controller.isHost.value) {
+                          return Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.monetization_on, color: Colors.white, size: 16),
+                                const SizedBox(width: 8),
+                                Text("${controller.totalCoins.value.toInt()}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }),
+
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.close, color: Colors.white),

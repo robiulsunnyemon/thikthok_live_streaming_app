@@ -11,6 +11,8 @@ import '../modules/live/bindings/live_binding.dart';
 import '../modules/live/views/live_feed_view.dart';
 import '../modules/live/views/start_live_view.dart';
 import '../modules/live/views/live_stream_view.dart';
+import '../modules/profile/bindings/profile_binding.dart';
+import '../modules/profile/views/profile_view.dart';
 
 part 'app_routes.dart';
 
@@ -51,6 +53,11 @@ class AppPages {
       name: _Paths.LIVE_STREAM,
       page: () => const LiveStreamView(),
       binding: LiveBinding(),
+    ),
+    GetPage(
+      name: _Paths.PROFILE,
+      page: () => const ProfileView(),
+      binding: ProfileBinding(),
     ),
   ];
 }
