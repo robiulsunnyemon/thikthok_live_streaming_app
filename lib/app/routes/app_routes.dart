@@ -6,6 +6,9 @@ abstract class Routes {
   static const HOME = _Paths.HOME;
   static const LOGIN = _Paths.LOGIN;
   static const CHAT = _Paths.CHAT;
+  static const LIVE_FEED = _Paths.LIVE_FEED;
+  static const START_LIVE = _Paths.START_LIVE;
+  static const LIVE_STREAM = _Paths.LIVE_STREAM;
 }
 
 abstract class _Paths {
@@ -13,4 +16,7 @@ abstract class _Paths {
   static const HOME = '/home';
   static const LOGIN = '/login';
   static const CHAT = '/chat';
+  static const LIVE_FEED = '/live/feed';
+  static const START_LIVE = '/live/start';
+  static const LIVE_STREAM = '/live/stream';
 }

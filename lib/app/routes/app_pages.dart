@@ -7,6 +7,10 @@ import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/chat/bindings/chat_binding.dart';
 import '../modules/chat/views/chat_view.dart';
+import '../modules/live/bindings/live_binding.dart';
+import '../modules/live/views/live_feed_view.dart';
+import '../modules/live/views/start_live_view.dart';
+import '../modules/live/views/live_stream_view.dart';
 
 part 'app_routes.dart';
 
@@ -32,6 +36,21 @@ class AppPages {
       name: _Paths.CHAT,
       page: () => const ChatView(),
       binding: ChatBinding(),
+    ),
+    GetPage(
+      name: _Paths.LIVE_FEED,
+      page: () => const LiveFeedView(),
+      binding: LiveBinding(),
+    ),
+    GetPage(
+      name: _Paths.START_LIVE,
+      page: () => const StartLiveView(),
+      binding: LiveBinding(),
+    ),
+    GetPage(
+      name: _Paths.LIVE_STREAM,
+      page: () => const LiveStreamView(),
+      binding: LiveBinding(),
     ),
   ];
 }

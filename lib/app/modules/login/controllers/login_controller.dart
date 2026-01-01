@@ -67,7 +67,8 @@ class LoginController extends GetxController {
 
       if (response.statusCode == 200) {
 
-        final body = response.body; 
+        final body = response.body;
+        print(response.body);
         if (body != null && body is Map && body['access_token'] != null) {
           final token = body['access_token'];
           GetStorage().write('token', token);
