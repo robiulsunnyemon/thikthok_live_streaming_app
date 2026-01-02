@@ -140,6 +140,14 @@ class LiveController extends GetxController {
   }
 
   Future<void> leaveLive() async {
+    // If we are the host, we should end the live stream on the server
+    if (isHost.value) {
+      socketService.sendAction({
+        "action": "end_live",
+        "channel_name": currentChannel.value,
+      });
+    }
+
     if (isEngineInitialized.value) {
       await _engine.leaveChannel();
     }
@@ -214,10 +222,21 @@ class LiveController extends GetxController {
         _joinAgoraChannel(token, channel, uid); 
         break;
 
+      case 'earning_update':
+      // হোস্টের আর্নিং রিয়েল-টাইমে আপডেট করার জন্য
+        if (event['total_earned'] != null) {
+          totalCoins.value = (event['total_earned'] as num).toDouble();
+          print("Real-time Earnings Updated: ${totalCoins.value}");
+        }
+        break;
+
       case 'joined_success':
         final channel = event['channel'];
         final token = event['agora_token']; // ব্যাকেন্ড থেকে আসা টোকেন
         final uid = event['uid'] ?? 0;
+        if (event['total_earned'] != null) {
+          totalCoins.value = (event['total_earned'] as num).toDouble();
+        }
         _joinAgoraChannel(token, channel, uid);
         break;
 
@@ -239,6 +258,7 @@ class LiveController extends GetxController {
 
       case 'joined_success': // Update balance when joining (paying) or just getting info
          if (event['new_balance'] != null) {
+           print("balance ${event["new_balance"]}");
             totalCoins.value = (event['new_balance'] as num).toDouble(); 
          }
          // ... existing logic continues inside case ...
