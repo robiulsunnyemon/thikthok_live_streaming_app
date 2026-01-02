@@ -23,12 +23,18 @@ class LiveStreamProvider extends GetConnect {
 
   // Placeholder for fetching active lives via HTTP if available
   Future<List<LiveStreamModel>> getActiveLiveStreams() async {
-    // Assuming an endpoint exists, e.g., /live/active
-    // If not, we might rely solely on WebSocket updates.
     final response = await get('/live/active');
     if (response.status.hasError) {
-      // return Future.error(response.statusText ?? 'Error fetching live streams');
-      // Return empty list if endpoint doesn't exist yet to avoid crash
+      return [];
+    } else {
+      List<dynamic> data = response.body;
+      return data.map((json) => LiveStreamModel.fromJson(json)).toList();
+    }
+  }
+
+  Future<List<LiveStreamModel>> getUserLiveStreams({int skip = 0, int limit = 10}) async {
+    final response = await get('/live/all_livestream/user?skip=$skip&limit=$limit');
+    if (response.status.hasError) {
       return [];
     } else {
       List<dynamic> data = response.body;

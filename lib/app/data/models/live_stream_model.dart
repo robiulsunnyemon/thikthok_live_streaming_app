@@ -25,15 +25,15 @@ class LiveStreamModel {
 
   factory LiveStreamModel.fromJson(Map<String, dynamic> json) {
     return LiveStreamModel(
-      id: json['id']?.toString() ?? '',
+      id: (json['_id'] ?? json['id'])?.toString() ?? '',
       host: LiveStreamUser.fromJson(json['host'] ?? {}),
-      agoraChannelName: json['channel_name'] ?? '',
+      agoraChannelName: json['agora_channel_name'] ?? json['channel_name'] ?? '',
       isPremium: json['is_premium'] ?? false,
       entryFee: (json['entry_fee'] ?? 0).toDouble(),
-      status: json['status'] ?? 'live',
+      status: json['status'] ?? 'ended',
       totalViews: json['total_views'] ?? 0,
-      totalLikes: json['total_like'] ?? 0, 
-      totalComments: json['total_comment'] ?? 0, 
+      totalLikes: json['total_like'] ?? 0,
+      totalComments: json['total_comment'] ?? 0,
     );
   }
 }

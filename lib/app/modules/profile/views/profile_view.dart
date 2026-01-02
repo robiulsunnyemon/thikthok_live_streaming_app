@@ -147,21 +147,69 @@ class ProfileView extends GetView<ProfileController> {
                 
                 const SizedBox(height: 40),
                 // Tab Bar placeholder for Videos/Likes
-                const DefaultTabController(
+                DefaultTabController(
                   length: 3, 
                   child: Column(
                     children: [
-                      TabBar(
+                      const TabBar(
                         indicatorColor: Colors.amber,
                         tabs: [
                           Tab(icon: Icon(Icons.grid_on)),
-                          Tab(icon: Icon(Icons.favorite_border)),
-                          Tab(icon: Icon(Icons.lock_outline)),
+                          Tab(text: "Followers",),
+                          Tab(text: "Following",),
                         ],
                       ),
                       SizedBox(
-                        height: 300,
-                        child: Center(child: Text("No videos yet", style: TextStyle(color: Colors.white54))),
+                        height: 400,
+                        child: TabBarView(
+                          children: [
+                            // Videos Tab
+                            Obx(() {
+                              if (controller.pastStreams.isEmpty) {
+                                return const Center(child: Text("No videos yet", style: TextStyle(color: Colors.white54)));
+                              }
+                              return GridView.builder(
+                                padding: const EdgeInsets.all(8),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 4,
+                                  mainAxisSpacing: 4,
+                                  childAspectRatio: 0.7,
+                                ),
+                                itemCount: controller.pastStreams.length,
+                                itemBuilder: (context, index) {
+                                  final stream = controller.pastStreams[index];
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade900,
+                                      borderRadius: BorderRadius.circular(4),
+                                      // image: DecorationImage(image: ...) // No thumbnail in API currently
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        const Center(child: Icon(Icons.play_circle_outline, color: Colors.white24, size: 32)),
+                                        Positioned(
+                                          bottom: 4,
+                                          left: 4,
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.play_arrow, color: Colors.white, size: 12),
+                                              Text("${stream.totalViews}", style: const TextStyle(color: Colors.white, fontSize: 10)),
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }),
+                            // Likes Tab (Placeholder)
+                            const Center(child: Icon(Icons.favorite, color: Colors.white12, size: 48)),
+                            // Private Tab (Placeholder)
+                            const Center(child: Icon(Icons.lock, color: Colors.white12, size: 48)),
+                          ],
+                        ),
                       )
                     ],
                   )
