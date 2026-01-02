@@ -1,17 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import '../../../data/models/active_user.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/socket_service.dart';
 import '../../../data/providers/chat_provider.dart';
 
 class ChatController extends GetxController {
   final ChatProvider provider = ChatProvider();
-  final SocketService socketService = Get.put(SocketService()); // Ensure service is alive
+  final SocketService socketService = Get.put(SocketService());
 
   final activeUsers = <ActiveUser>[].obs;
   final messages = <ChatMessage>[].obs;
   final isLoadingUsers = true.obs;
+  String currentUserId = ''; 
   
   // Selected user to chat with
   final selectedUser = Rxn<ActiveUser>();
@@ -22,20 +25,44 @@ class ChatController extends GetxController {
   void onInit() {
     super.onInit();
     fetchActiveUsers();
+    fetchMyProfile();
     
     // Listen to incoming messages
     ever(socketService.incomingMessages, (String message) {
-       if (message.isNotEmpty) {
-         // Logic to parse incoming message and add to list if relevant
-         // For now, let's assume we just display it or parse if JSON
-         try{
-           // Parse logic here if needed
-           print("Chat Controller Received: $message");
+       if (message.isNotEmpty && selectedUser.value != null) {
+         try {
+           final data = jsonDecode(message);
+           // Incoming: { "sender_id": ..., "message": ..., "timestamp": ... }
+           final senderId = data['sender_id'];
+           final currentChatId = selectedUser.value!.userId;
+
+           if (senderId == currentChatId) {
+              final newMessage = ChatMessage(
+                id: data['_id'] ?? 'socket_${DateTime.now().millisecondsSinceEpoch}',
+                senderId: senderId,
+                receiverId: currentUserId,
+                message: data['message'],
+                timestamp: DateTime.tryParse(data['timestamp'] ?? '') ?? DateTime.now(),
+                isMe: false,
+              );
+              messages.add(newMessage);
+           }
          } catch(e){
            print("Error parsing message: $e");
          }
        }
     });
+  }
+
+  Future<void> fetchMyProfile() async {
+    try {
+      final profile = await provider.getMyProfile();
+      if (profile != null) {
+        currentUserId = profile.userId; 
+      }
+    } catch (e) {
+      print("Error fetching profile: $e");
+    }
   }
 
   Future<void> fetchActiveUsers() async {
@@ -51,51 +78,52 @@ class ChatController extends GetxController {
     }
   }
 
-  void selectUser(ActiveUser user) {
+  void selectUser(ActiveUser user) async {
     selectedUser.value = user;
-    messages.clear(); // Clear previous chat or load history if API exists
+    messages.clear();
+    
+    // Fetch History
+    try {
+      if (currentUserId.isNotEmpty) {
+        final history = await provider.getChatHistory(user.userId, currentUserId);
+        messages.assignAll(history);
+      } else {
+        await fetchMyProfile();
+         if (currentUserId.isNotEmpty) {
+            final history = await provider.getChatHistory(user.userId, currentUserId);
+            messages.assignAll(history);
+         }
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to load history");
+    }
   }
 
-  void sendMessage() {
+  Future<void> sendMessage() async {
     final text = messageController.text.trim();
     if (text.isEmpty || selectedUser.value == null) return;
 
     final receiverId = selectedUser.value!.userId;
     
-    // Create message object
-    // Note: Protocol says send: { "sender_id": user_id, "message": text }
-    // But usually we need to send "receiver_id" to server so it knows where to route?
-    // The prompt says: { "sender_id": user_id, "message": text } 
-    // Wait, if I send "sender_id" as MY id, how does server know who is RECEIVER?
-    // Unless "sender_id" in the JSON *IS* the Target User ID? 
-    // The prompt says: "নিচের ফরমেটে আমাকে ডাটা পাঠাতে হবে এক ইউজার আরেক ইউজারকে।"
-    // { "sender_id": user_id, "message": text }
-    // Usually "sender_id" implies who SENT it. 
-    // I will assume for now typical patterns roughly, but follow the prompt strictly if possible.
-    // However, sending MY OWN ID as sender_id is redundant if I possess the token. 
-    // Maybe `sender_id` is actually the `target_user_id`?
-    // Let's assume standard: To send to Bob, I need to tell server "To: Bob".
-    // Prompt says: "sender_id": user_id. 
-    // I will construct the JSON as requested using the selected user's ID as 'sender_id' 
-    // OR my ID? 
-    // Let's assume "sender_id" meant "receiver_id" in the prompt context or it's a specific protocol.
-    // I will use `selectedUser.value!.userId` as the ID we are sending TO/ABOUT.
-    // Actually, if I send a message, I am the sender.
-    // Let's implement generic logic:
-    
     final msgObj = {
-      "receiver_id": selectedUser.value!.userId, // Sending TO this user? Or simulates?
-      // Using selectedUser as the ID in the payload as per likely intent for P2P routing
+      "receiver_id": receiverId, 
       "message": text
     };
-    print(msgObj);
+
+
+    print("msgObj: $msgObj");
+    print("called 1");
 
     socketService.sendMessage(jsonEncode(msgObj));
+    print("called 2");
 
     // Optimistic UI update
     messages.add(ChatMessage(
-      senderId: 'me', // distinct from API ID
+      id: 'local_${DateTime.now().millisecondsSinceEpoch}',
+      senderId: currentUserId, 
+      receiverId: receiverId,
       message: text,
+      timestamp: DateTime.now(),
       isMe: true,
     ));
 

@@ -42,12 +42,20 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: InkWell(
+              onTap: (){
+                Get.toNamed(Routes.CHAT);
+              },
+              child: const Text(
+                'Chat',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ),
           Row()
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed('/chat'),
-        child: const Icon(Icons.chat),
       ),
     );
   }

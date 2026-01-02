@@ -4,6 +4,7 @@ class UserModel {
   String? lastName;
   String? email;
   double? coins;
+  int? totalLike;
   String? phoneNumber;
   bool? isVerified;
   String? country;
@@ -31,6 +32,7 @@ class UserModel {
     this.gender,
     this.dateOfBirth,
     this.bio,
+    this.totalLike,
     this.isOnline,
     this.followingCount,
     this.followersCount,
@@ -58,6 +60,7 @@ class UserModel {
     followersCount = json['followers_count'];
     accountStatus = json['account_status'];
     role = json['role'];
+    totalLike=json['total_like'];
     profileImage = json['profile_image'];
     authProvider = json['auth_provider'];
     createdAt = json['created_at'];

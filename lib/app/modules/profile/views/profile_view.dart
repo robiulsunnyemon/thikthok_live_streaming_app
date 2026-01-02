@@ -85,7 +85,7 @@ class ProfileView extends GetView<ProfileController> {
                     Container(height: 20, width: 1, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 20)),
                     _buildStatItem("Followers", "${user.followersCount ?? 0}"),
                     Container(height: 20, width: 1, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 20)),
-                    _buildStatItem("Likes", "0"), // API doesn't have total likes yet? Using 0 for now.
+                    _buildStatItem("Likes", "${user.totalLike ?? 0}"), // API doesn't have total likes yet? Using 0 for now.
                   ],
                 ),
                 
