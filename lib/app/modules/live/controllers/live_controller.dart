@@ -162,7 +162,7 @@ class LiveController extends GetxController {
       "channel_name": currentChannel.value,
     });
     // Optimistic update
-    likeCount.value++; 
+   // likeCount.value++;
   }
 
   void sendComment(String text) {
